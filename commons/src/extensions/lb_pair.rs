@@ -262,7 +262,7 @@ impl LbPairExtension for LbPair {
     ) -> Result<(i32, bool)> {
         let bin_array_bitmap = U1024::from_limbs(self.bin_array_bitmap);
         let array_offset: usize = Self::get_bin_array_offset(start_array_index);
-        let (min_bitmap_id, max_bitmap_id) = LbPair::bitmap_range();
+        let (min_bitmap_id, max_bitmap_id) = Self::bitmap_range();
         if swap_for_y {
             let bitmap_range: usize = max_bitmap_id
                 .checked_sub(min_bitmap_id)

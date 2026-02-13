@@ -14,8 +14,12 @@ mod dlmm_generated {
 
 pub use dlmm_generated::dlmm;
 
-use dlmm::accounts::*;
 use dlmm::types::*;
+
+pub use dlmm::accounts::PositionV2;
+
+pub mod zero_copy;
+pub use zero_copy::{BinArray, BinArrayBitmapExtension, LbPair};
 
 pub mod constants;
 pub use constants::*;
@@ -48,5 +52,3 @@ pub use account_filters::*;
 
 pub mod token_2022;
 pub use token_2022::*;
-
-pub mod zero_copy;

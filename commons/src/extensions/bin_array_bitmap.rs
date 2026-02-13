@@ -31,7 +31,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
         swap_for_y: bool,
         start_index: i32,
     ) -> Result<(i32, bool)> {
-        let (min_bitmap_id, max_bit_map_id) = BinArrayBitmapExtension::bitmap_range();
+        let (min_bitmap_id, max_bit_map_id) = Self::bitmap_range();
         if start_index > 0 {
             if swap_for_y {
                 match self.iter_bitmap(start_index, BIN_ARRAY_BITMAP_SIZE)? {
@@ -134,7 +134,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                         let bin_array_offset_in_bitmap =
                             bin_array_offset - bin_array_bitmap.leading_zeros();
 
-                        return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                        return Ok(Some(Self::to_bin_array_index(
                             i,
                             bin_array_offset_in_bitmap,
                             false,
@@ -145,7 +145,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                     }
                     let bin_array_offset_in_bitmap =
                         BIN_ARRAY_BITMAP_SIZE as usize - bin_array_bitmap.leading_zeros() - 1;
-                    return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                    return Ok(Some(Self::to_bin_array_index(
                         i,
                         bin_array_offset_in_bitmap,
                         false,
@@ -163,7 +163,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                         let bin_array_offset_in_bitmap =
                             bin_array_offset + bin_array_bitmap.trailing_zeros();
 
-                        return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                        return Ok(Some(Self::to_bin_array_index(
                             i,
                             bin_array_offset_in_bitmap,
                             false,
@@ -175,7 +175,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                     }
                     let bin_array_offset_in_bitmap = bin_array_bitmap.trailing_zeros();
 
-                    return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                    return Ok(Some(Self::to_bin_array_index(
                         i,
                         bin_array_offset_in_bitmap,
                         false,
@@ -195,7 +195,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
 
                         let bin_array_offset_in_bitmap =
                             bin_array_offset + bin_array_bitmap.trailing_zeros();
-                        return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                        return Ok(Some(Self::to_bin_array_index(
                             i,
                             bin_array_offset_in_bitmap,
                             true,
@@ -207,7 +207,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                     }
 
                     let bin_array_offset_in_bitmap = bin_array_bitmap.trailing_zeros();
-                    return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                    return Ok(Some(Self::to_bin_array_index(
                         i,
                         bin_array_offset_in_bitmap,
                         true,
@@ -226,7 +226,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                         }
                         let bin_array_offset_in_bitmap =
                             bin_array_offset - bin_array_bitmap.leading_zeros();
-                        return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                        return Ok(Some(Self::to_bin_array_index(
                             i,
                             bin_array_offset_in_bitmap,
                             true,
@@ -238,7 +238,7 @@ impl BinArrayBitmapExtExtension for BinArrayBitmapExtension {
                     }
                     let bin_array_offset_in_bitmap =
                         BIN_ARRAY_BITMAP_SIZE as usize - bin_array_bitmap.leading_zeros() - 1;
-                    return Ok(Some(BinArrayBitmapExtension::to_bin_array_index(
+                    return Ok(Some(Self::to_bin_array_index(
                         i,
                         bin_array_offset_in_bitmap,
                         true,

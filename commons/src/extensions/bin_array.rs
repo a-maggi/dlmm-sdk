@@ -39,7 +39,7 @@ impl BinArrayExtension for BinArray {
 
     fn is_bin_id_within_range(&self, bin_id: i32) -> Result<bool> {
         let (lower_bin_id, upper_bin_id) =
-            BinArray::get_bin_array_lower_upper_bin_id(self.index as i32)?;
+            Self::get_bin_array_lower_upper_bin_id(self.index as i32)?;
 
         Ok(bin_id >= lower_bin_id && bin_id <= upper_bin_id)
     }
@@ -54,7 +54,7 @@ impl BinArrayExtension for BinArray {
 
     fn get_bin_index_in_array(&self, bin_id: i32) -> Result<usize> {
         ensure!(self.is_bin_id_within_range(bin_id)?, "Bin id out of range");
-        let (lower_bin_id, _) = BinArray::get_bin_array_lower_upper_bin_id(self.index as i32)?;
+        let (lower_bin_id, _) = Self::get_bin_array_lower_upper_bin_id(self.index as i32)?;
         let index = bin_id.checked_sub(lower_bin_id).context("overflow")?;
         Ok(index as usize)
     }
@@ -75,8 +75,8 @@ impl BinArrayExtension for BinArray {
     }
 
     fn get_bin_array_indexes_coverage(lower_bin_id: i32, upper_bin_id: i32) -> Result<Vec<i32>> {
-        let lower_idx = BinArray::bin_id_to_bin_array_index(lower_bin_id)?;
-        let upper_idx = BinArray::bin_id_to_bin_array_index(upper_bin_id)?;
+        let lower_idx = Self::bin_id_to_bin_array_index(lower_bin_id)?;
+        let upper_idx = Self::bin_id_to_bin_array_index(upper_bin_id)?;
 
         let mut indexes = vec![];
 
@@ -93,7 +93,7 @@ impl BinArrayExtension for BinArray {
         lb_pair: Pubkey,
     ) -> Result<Vec<AccountMeta>> {
         let bin_array_indexes =
-            BinArray::get_bin_array_indexes_coverage(lower_bin_id, upper_bin_id)?;
+            Self::get_bin_array_indexes_coverage(lower_bin_id, upper_bin_id)?;
 
         Ok(bin_array_indexes
             .into_iter()
