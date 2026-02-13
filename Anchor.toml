@@ -25,5 +25,5 @@ program = "./artifacts/transfer_hook_counter.so"
 test = "yarn run ts-mocha --sort --type-check --bail -p ./tsconfig.json -t 1000000 tests/*.ts"
 
 [toolchain]
-solana_version = "2.1.0"
-anchor_version = "0.31.0"
+solana_version = "3.0.0"
+anchor_version = "0.32.1"

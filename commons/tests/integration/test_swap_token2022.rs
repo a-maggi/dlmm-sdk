@@ -11,6 +11,8 @@ struct Token2022TestPair {
     bin_array_2: Pubkey,
 }
 
+pub static SPL_MEMO_PROGRAM_ID: Pubkey = pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+
 fn setup_token_2022_test_pair() -> (ProgramTest, Token2022TestPair) {
     let mut test = ProgramTest::default();
     test.prefer_bpf(true);
@@ -229,7 +231,7 @@ async fn test_swap_exact_out() {
             token_y_program: spl_token::ID,
             program: dlmm::ID,
             event_authority,
-            memo_program: spl_memo::ID,
+            memo_program: SPL_MEMO_PROGRAM_ID,
         }
         .to_account_metas(None);
 
@@ -415,7 +417,7 @@ async fn test_swap() {
             token_y_program: spl_token::ID,
             program: dlmm::ID,
             event_authority,
-            memo_program: spl_memo::ID,
+            memo_program: SPL_MEMO_PROGRAM_ID,
         }
         .to_account_metas(None);
 

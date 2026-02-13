@@ -1,7 +1,18 @@
-use anchor_lang::prelude::declare_program;
 use anyhow::*;
 
-declare_program!(dlmm);
+// Re-export Borsh traits for downstream users.
+pub use borsh::{BorshDeserialize, BorshSerialize};
+
+#[allow(unexpected_cfgs, unused_imports)]
+mod dlmm_generated {
+	use anchor_lang::prelude::declare_program;
+	use anchor_lang::prelude::*;
+	use ::borsh::BorshDeserialize;
+
+	declare_program!(dlmm);
+}
+
+pub use dlmm_generated::dlmm;
 
 use dlmm::accounts::*;
 use dlmm::types::*;
