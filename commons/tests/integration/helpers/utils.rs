@@ -1,3 +1,4 @@
+use anchor_lang::prelude::system_instruction;
 use anchor_spl::associated_token::*;
 use anchor_spl::token::spl_token;
 use assert_matches::assert_matches;
@@ -88,7 +89,7 @@ pub async fn warp_sol(
     amount: u64,
     banks_client: &mut BanksClient,
 ) {
-    let wsol_ata = spl_associated_token_account::get_associated_token_address(
+    let wsol_ata =  get_associated_token_address(
         &wallet,
         &spl_token::native_mint::id(),
     );
@@ -102,7 +103,7 @@ pub async fn warp_sol(
         );
 
     let transfer_sol_ix =
-        solana_program::system_instruction::transfer(&payer.pubkey(), &wsol_ata, amount);
+        system_instruction::transfer(&payer.pubkey(), &wsol_ata, amount);
 
     let sync_native_ix = spl_token::instruction::sync_native(&spl_token::id(), &wsol_ata).unwrap();
 

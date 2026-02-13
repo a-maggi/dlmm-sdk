@@ -147,11 +147,11 @@ pub struct TransferFeeExcludedAmount {
 }
 
 pub fn calculate_transfer_fee_excluded_amount(
-    mint_account: &Account,
+    transfer_fee: Option<TransferFee>,
     transfer_fee_included_amount: u64,
     epoch: u64,
 ) -> Result<TransferFeeExcludedAmount> {
-    if let Some(epoch_transfer_fee) = get_epoch_transfer_fee(mint_account, epoch)? {
+    if let Some(epoch_transfer_fee) = transfer_fee {
         let transfer_fee = epoch_transfer_fee
             .calculate_fee(transfer_fee_included_amount)
             .context("MathOverflow")?;
@@ -178,7 +178,7 @@ pub struct TransferFeeIncludedAmount {
 }
 
 pub fn calculate_transfer_fee_included_amount(
-    mint_account: &Account,
+    transfer_fee: Option<TransferFee>,
     transfer_fee_excluded_amount: u64,
     epoch: u64,
 ) -> Result<TransferFeeIncludedAmount> {
@@ -189,7 +189,7 @@ pub fn calculate_transfer_fee_included_amount(
         });
     }
 
-    if let Some(epoch_transfer_fee) = get_epoch_transfer_fee(mint_account, epoch)? {
+    if let Some(epoch_transfer_fee) = transfer_fee {
         let transfer_fee: u64 =
             if u16::from(epoch_transfer_fee.transfer_fee_basis_points) == MAX_FEE_BASIS_POINTS {
                 u64::from(epoch_transfer_fee.maximum_fee)

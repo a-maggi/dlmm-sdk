@@ -1,5 +1,6 @@
 use crate::*;
 use core::result::Result::Ok;
+use anchor_spl::token_2022::spl_token_2022::extension::transfer_fee::TransferFee;
 use solana_sdk::{account::Account, clock::Clock, pubkey::Pubkey};
 use std::collections::HashMap;
 
@@ -73,8 +74,8 @@ pub fn quote_exact_out(
     bin_arrays: HashMap<Pubkey, BinArray>,
     bitmap_extension: Option<&BinArrayBitmapExtension>,
     clock: &Clock,
-    mint_x_account: &Account,
-    mint_y_account: &Account,
+    mint_x_transfer_fee: Option<TransferFee>,
+    mint_y_transfer_fee: Option<TransferFee>,
 ) -> Result<SwapExactOutQuote> {
     let current_timestamp = clock.unix_timestamp as u64;
     let current_slot = clock.slot;
@@ -88,14 +89,14 @@ pub fn quote_exact_out(
     let mut total_amount_in: u64 = 0;
     let mut total_fee: u64 = 0;
 
-    let (in_mint_account, out_mint_account) = if swap_for_y {
-        (mint_x_account, mint_y_account)
+    let (in_mint_transfer_fee, out_mint_transfer_fee) = if swap_for_y {
+        (mint_x_transfer_fee, mint_y_transfer_fee)
     } else {
-        (mint_y_account, mint_x_account)
+        (mint_y_transfer_fee, mint_x_transfer_fee)
     };
 
     amount_out =
-        calculate_transfer_fee_included_amount(out_mint_account, amount_out, epoch)?.amount;
+        calculate_transfer_fee_included_amount(out_mint_transfer_fee, amount_out, epoch)?.amount;
 
     while amount_out > 0 {
         let active_bin_array_pubkey = get_bin_array_pubkeys_for_swap(
@@ -165,7 +166,7 @@ pub fn quote_exact_out(
         .context("MathOverflow")?;
 
     total_amount_in =
-        calculate_transfer_fee_included_amount(in_mint_account, total_amount_in, epoch)?.amount;
+        calculate_transfer_fee_included_amount(in_mint_transfer_fee, total_amount_in, epoch)?.amount;
 
     Ok(SwapExactOutQuote {
         amount_in: total_amount_in,
@@ -182,8 +183,8 @@ pub fn quote_exact_in(
     bin_arrays: HashMap<Pubkey, BinArray>,
     bitmap_extension: Option<&BinArrayBitmapExtension>,
     clock: &Clock,
-    mint_x_account: &Account,
-    mint_y_account: &Account,
+    mint_x_transfer_fee: Option<TransferFee>,
+    mint_y_transfer_fee: Option<TransferFee>,
 ) -> Result<SwapExactInQuote> {
     let current_timestamp = clock.unix_timestamp as u64;
     let current_slot = clock.slot;
@@ -197,14 +198,14 @@ pub fn quote_exact_in(
     let mut total_amount_out: u64 = 0;
     let mut total_fee: u64 = 0;
 
-    let (in_mint_account, out_mint_account) = if swap_for_y {
+    let (in_mint_transfer_fee, out_mint_transfer_fee) = if swap_for_y {
         (mint_x_account, mint_y_account)
     } else {
         (mint_y_account, mint_x_account)
     };
 
     let transfer_fee_excluded_amount_in =
-        calculate_transfer_fee_excluded_amount(in_mint_account, amount_in, epoch)?.amount;
+        calculate_transfer_fee_excluded_amount(in_mint_transfer_fee, amount_in, epoch)?.amount;
 
     let mut amount_left = transfer_fee_excluded_amount_in;
 
@@ -261,7 +262,7 @@ pub fn quote_exact_in(
     }
 
     let transfer_fee_excluded_amount_out =
-        calculate_transfer_fee_excluded_amount(out_mint_account, total_amount_out, epoch)?.amount;
+        calculate_transfer_fee_excluded_amount(out_mint_transfer_fee, total_amount_out, epoch)?.amount;
 
     Ok(SwapExactInQuote {
         amount_out: transfer_fee_excluded_amount_out,
@@ -365,6 +366,9 @@ mod tests {
         let mint_x_account = mint_accounts[0].take().unwrap();
         let mint_y_account = mint_accounts[1].take().unwrap();
 
+        let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+        let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
         // 3 bin arrays to left, and right is enough to cover most of the swap, and stay under 1.4m CU constraint.
         // Get 3 bin arrays to the left from the active bin
         let left_bin_array_pubkeys =
@@ -410,8 +414,8 @@ mod tests {
             bin_arrays.clone(),
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 
@@ -430,8 +434,8 @@ mod tests {
             bin_arrays.clone(),
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 
@@ -451,8 +455,8 @@ mod tests {
             bin_arrays.clone(),
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 
@@ -546,8 +550,8 @@ mod tests {
             bin_arrays.clone(),
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 
@@ -567,8 +571,8 @@ mod tests {
             bin_arrays.clone(),
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 

@@ -137,7 +137,7 @@ async fn test_swap_exact_out() {
             .flatten()
             .unwrap();
 
-        let lb_pair_state: LbPair = bytemuck::pod_read_unaligned(&lb_pair_account.data[8..]);
+        let lb_pair_state: zero_copy::LbPair = bytemuck::pod_read_unaligned(&lb_pair_account.data[8..]);
 
         let bin_array_1_account = banks_client
             .get_account(bin_array_1)
@@ -170,6 +170,8 @@ async fn test_swap_exact_out() {
             .flatten()
             .unwrap();
 
+        let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+
         let mint_y_account = banks_client
             .get_account(lb_pair_state.token_y_mint)
             .await
@@ -177,9 +179,11 @@ async fn test_swap_exact_out() {
             .flatten()
             .unwrap();
 
+        let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
         let swap_for_y = out_mint == lb_pair_state.token_y_mint;
 
-        let quote_result = commons::quote::quote_exact_out(
+        let quote_result = quote_exact_out(
             lb_pair,
             &lb_pair_state,
             out_amount,
@@ -187,8 +191,8 @@ async fn test_swap_exact_out() {
             bin_arrays,
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 
@@ -333,7 +337,7 @@ async fn test_swap() {
             .flatten()
             .unwrap();
 
-        let lb_pair_state: LbPair = bytemuck::pod_read_unaligned(&lb_pair_account.data[8..]);
+        let lb_pair_state: zero_copy::LbPair = bytemuck::pod_read_unaligned(&lb_pair_account.data[8..]);
 
         let bin_array_1_account = banks_client
             .get_account(bin_array_1)
@@ -366,6 +370,8 @@ async fn test_swap() {
             .flatten()
             .unwrap();
 
+        let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+
         let mint_y_account = banks_client
             .get_account(lb_pair_state.token_y_mint)
             .await
@@ -373,9 +379,11 @@ async fn test_swap() {
             .flatten()
             .unwrap();
 
+        let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
         let swap_for_y = out_mint == lb_pair_state.token_y_mint;
 
-        let quote_result = commons::quote::quote_exact_in(
+        let quote_result = quote_exact_in(
             lb_pair,
             &lb_pair_state,
             amount_in,
@@ -383,8 +391,8 @@ async fn test_swap() {
             bin_arrays,
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 

@@ -165,12 +165,17 @@ async fn test_swap_exact_out() {
         .flatten()
         .unwrap();
 
+  
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+
     let mint_y_account = banks_client
         .get_account(lb_pair_state.token_y_mint)
         .await
         .ok()
         .flatten()
         .unwrap();
+
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
 
     let quote_result = commons::quote::quote_exact_out(
         lb_pair,
@@ -180,8 +185,8 @@ async fn test_swap_exact_out() {
         bin_arrays,
         None,
         &clock,
-        &mint_x_account,
-        &mint_y_account,
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
@@ -349,12 +354,16 @@ async fn test_swap() {
         .flatten()
         .unwrap();
 
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+
     let mint_y_account = banks_client
         .get_account(lb_pair_state.token_y_mint)
         .await
         .ok()
         .flatten()
         .unwrap();
+
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
 
     let quote_result = commons::quote::quote_exact_in(
         lb_pair,
@@ -363,9 +372,9 @@ async fn test_swap() {
         false,
         bin_arrays,
         None,
-        &clock,
-        &mint_x_account,
-        &mint_y_account,
+        &clock, 
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
