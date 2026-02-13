@@ -199,9 +199,9 @@ pub fn quote_exact_in(
     let mut total_fee: u64 = 0;
 
     let (in_mint_transfer_fee, out_mint_transfer_fee) = if swap_for_y {
-        (mint_x_account, mint_y_account)
+        (mint_x_transfer_fee, mint_y_transfer_fee)
     } else {
-        (mint_y_account, mint_x_account)
+        (mint_y_transfer_fee, mint_x_transfer_fee)
     };
 
     let transfer_fee_excluded_amount_in =
@@ -366,6 +366,8 @@ mod tests {
         let mint_x_account = mint_accounts[0].take().unwrap();
         let mint_y_account = mint_accounts[1].take().unwrap();
 
+        let clock = get_clock(RpcClient::new(Cluster::Mainnet.url().to_string())).await.unwrap();
+
         let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
         let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
 
@@ -475,8 +477,8 @@ mod tests {
             bin_arrays,
             None,
             &clock,
-            &mint_x_account,
-            &mint_y_account,
+            mint_x_transfer_fee,
+            mint_y_transfer_fee,
         )
         .unwrap();
 
@@ -505,6 +507,11 @@ mod tests {
 
         let mint_x_account = mint_accounts[0].take().unwrap();
         let mint_y_account = mint_accounts[1].take().unwrap();
+
+        let clock = get_clock(RpcClient::new(Cluster::Mainnet.url().to_string())).await.unwrap();
+
+        let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+        let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
 
         // 3 bin arrays to left, and right is enough to cover most of the swap, and stay under 1.4m CU constraint.
         // Get 3 bin arrays to the left from the active bin
