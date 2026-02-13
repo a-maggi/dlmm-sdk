@@ -1,7 +1,7 @@
 use crate::*;
 use core::result::Result::Ok;
 use anchor_spl::token_2022::spl_token_2022::extension::transfer_fee::TransferFee;
-use solana_sdk::{account::Account, clock::Clock, pubkey::Pubkey};
+use solana_sdk::{clock::Clock, pubkey::Pubkey};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -110,7 +110,7 @@ pub fn quote_exact_out(
         .context("Pool out of liquidity")?;
 
         let mut active_bin_array = bin_arrays
-            .get(&active_bin_array_pubkey)
+            .get(&active_bin_array_pubkey.1)
             .cloned()
             .context("Active bin array not found")?;
 
@@ -221,7 +221,7 @@ pub fn quote_exact_in(
         .context("Pool out of liquidity")?;
 
         let mut active_bin_array = bin_arrays
-            .get(&active_bin_array_pubkey)
+            .get(&active_bin_array_pubkey.1)
             .cloned()
             .context("Active bin array not found")?;
 
@@ -276,7 +276,7 @@ pub fn get_bin_array_pubkeys_for_swap(
     bitmap_extension: Option<&BinArrayBitmapExtension>,
     swap_for_y: bool,
     take_count: u8,
-) -> Result<Vec<Pubkey>> {
+) -> Result<Vec<(i32, Pubkey)>> {
     let mut start_bin_array_idx = BinArray::bin_id_to_bin_array_index(lb_pair.active_id)?;
     let mut bin_array_idx = vec![];
     let increment = if swap_for_y { -1 } else { 1 };
@@ -321,7 +321,7 @@ pub fn get_bin_array_pubkeys_for_swap(
 
     let bin_array_pubkeys = bin_array_idx
         .into_iter()
-        .map(|idx| derive_bin_array_pda(lb_pair_pubkey, idx.into()).0)
+        .map(|idx| (idx, derive_bin_array_pda(lb_pair_pubkey, idx.into()).0))
         .collect();
 
     Ok(bin_array_pubkeys)
@@ -384,10 +384,11 @@ mod tests {
         let bin_array_pubkeys = left_bin_array_pubkeys
             .into_iter()
             .chain(right_bin_array_pubkeys.into_iter())
-            .collect::<Vec<Pubkey>>();
+            .collect::<Vec<(i32, Pubkey)>>();
+        let bin_array_pubkeys = bin_array_pubkeys.into_iter().map(|(_, key)| key).collect::<Vec<Pubkey>>();
 
         let accounts = rpc_client
-            .get_multiple_accounts(&bin_array_pubkeys)
+            .get_multiple_accounts(&bin_array_pubkeys.as_slice())
             .await
             .unwrap();
 
@@ -526,10 +527,11 @@ mod tests {
         let bin_array_pubkeys = left_bin_array_pubkeys
             .into_iter()
             .chain(right_bin_array_pubkeys.into_iter())
-            .collect::<Vec<Pubkey>>();
+            .collect::<Vec<(i32, Pubkey)>>();
+        let bin_array_pubkeys = bin_array_pubkeys.into_iter().map(|(_, key)| key).collect::<Vec<Pubkey>>();
 
        let accounts = rpc_client
-            .get_multiple_accounts(&bin_array_pubkeys)
+            .get_multiple_accounts(&bin_array_pubkeys.as_slice())
             .await
             .unwrap();
 
