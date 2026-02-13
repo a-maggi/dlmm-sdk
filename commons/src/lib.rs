@@ -19,7 +19,10 @@ use dlmm::types::*;
 pub use dlmm::accounts::PositionV2;
 
 pub mod zero_copy;
-pub use zero_copy::{BinArray, BinArrayBitmapExtension, LbPair};
+pub use zero_copy::{
+    BinArray, BinArrayAccount, BinArrayBitmapExtension, BinArrayBitmapExtensionAccount, LbPair,
+    LbPairAccount,
+};
 
 pub mod constants;
 pub use constants::*;
