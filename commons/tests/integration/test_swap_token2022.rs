@@ -11,8 +11,6 @@ struct Token2022TestPair {
     bin_array_2: Pubkey,
 }
 
-pub static SPL_MEMO_PROGRAM_ID: Pubkey = pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
-
 fn setup_token_2022_test_pair() -> (ProgramTest, Token2022TestPair) {
     let mut test = ProgramTest::default();
     test.prefer_bpf(true);
@@ -130,60 +128,12 @@ async fn test_swap_exact_out() {
 
         let (event_authority, _bump) = derive_event_authority_pda();
 
-        let lb_pair_account = banks_client
-            .get_account(lb_pair)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let lb_pair_state: zero_copy::LbPair = bytemuck::pod_read_unaligned(&lb_pair_account.data[8..]);
-
-        let bin_array_1_account = banks_client
-            .get_account(bin_array_1)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let bin_array_1_state = bytemuck::pod_read_unaligned(&bin_array_1_account.data[8..]);
-
-        let bin_array_2_account = banks_client
-            .get_account(bin_array_2)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let bin_array_2_state = bytemuck::pod_read_unaligned(&bin_array_2_account.data[8..]);
-
-        let mut bin_arrays = HashMap::new();
-        bin_arrays.insert(bin_array_1, bin_array_1_state);
-        bin_arrays.insert(bin_array_2, bin_array_2_state);
-
-        let clock = get_clock(&mut banks_client).await;
-
-        let mint_x_account = banks_client
-            .get_account(lb_pair_state.token_x_mint)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
-
-        let mint_y_account = banks_client
-            .get_account(lb_pair_state.token_y_mint)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+        let (lb_pair_state, bin_arrays, mint_x_account, mint_y_account, clock) =
+            fetch_swap_state(&mut banks_client, lb_pair, &[bin_array_1, bin_array_2]).await;
 
         let swap_for_y = out_mint == lb_pair_state.token_y_mint;
 
-        let quote_result = quote_exact_out(
+        let quote_result = commons::quote::quote_exact_out(
             lb_pair,
             &lb_pair_state,
             out_amount,
@@ -191,33 +141,18 @@ async fn test_swap_exact_out() {
             bin_arrays,
             None,
             &clock,
-            mint_x_transfer_fee,
-            mint_y_transfer_fee,
+            &mint_x_account,
+            &mint_y_account,
         )
         .unwrap();
 
         println!("quote_result {:?}", quote_result);
 
-        let user_token_out_account_before = banks_client
-            .get_account(user_token_out)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let user_token_in_account_before = banks_client
-            .get_account(user_token_in)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
         let user_token_in_state_before =
-            TokenAccount::try_deserialize(&mut user_token_in_account_before.data.as_ref()).unwrap();
+            fetch_token_account_state(&mut banks_client, user_token_in).await;
 
         let user_token_out_state_before =
-            TokenAccount::try_deserialize(&mut user_token_out_account_before.data.as_ref())
-                .unwrap();
+            fetch_token_account_state(&mut banks_client, user_token_out).await;
 
         let main_accounts = dlmm::client::accounts::SwapExactOut2 {
             lb_pair,
@@ -235,7 +170,7 @@ async fn test_swap_exact_out() {
             token_y_program: spl_token::ID,
             program: dlmm::ID,
             event_authority,
-            memo_program: SPL_MEMO_PROGRAM_ID,
+            memo_program: spl_memo::ID,
         }
         .to_account_metas(None);
 
@@ -260,25 +195,11 @@ async fn test_swap_exact_out() {
 
         process_and_assert_ok(&[swap_ix], &payer, &[&payer], &mut banks_client).await;
 
-        let user_token_out_account_after = banks_client
-            .get_account(user_token_out)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let user_token_in_account_after = banks_client
-            .get_account(user_token_in)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
         let user_token_out_state_after =
-            TokenAccount::try_deserialize(&mut user_token_out_account_after.data.as_ref()).unwrap();
+            fetch_token_account_state(&mut banks_client, user_token_out).await;
 
         let user_token_in_state_after =
-            TokenAccount::try_deserialize(&mut user_token_in_account_after.data.as_ref()).unwrap();
+            fetch_token_account_state(&mut banks_client, user_token_in).await;
 
         assert_eq!(
             user_token_in_state_before.amount - user_token_in_state_after.amount,
@@ -330,60 +251,12 @@ async fn test_swap() {
 
         let (event_authority, _bump) = derive_event_authority_pda();
 
-        let lb_pair_account = banks_client
-            .get_account(lb_pair)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let lb_pair_state: zero_copy::LbPair = bytemuck::pod_read_unaligned(&lb_pair_account.data[8..]);
-
-        let bin_array_1_account = banks_client
-            .get_account(bin_array_1)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let bin_array_1_state = bytemuck::pod_read_unaligned(&bin_array_1_account.data[8..]);
-
-        let bin_array_2_account = banks_client
-            .get_account(bin_array_2)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let bin_array_2_state = bytemuck::pod_read_unaligned(&bin_array_2_account.data[8..]);
-
-        let mut bin_arrays = HashMap::new();
-        bin_arrays.insert(bin_array_1, bin_array_1_state);
-        bin_arrays.insert(bin_array_2, bin_array_2_state);
-
-        let clock = get_clock(&mut banks_client).await;
-
-        let mint_x_account = banks_client
-            .get_account(lb_pair_state.token_x_mint)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
-
-        let mint_y_account = banks_client
-            .get_account(lb_pair_state.token_y_mint)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
-        let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+        let (lb_pair_state, bin_arrays, mint_x_account, mint_y_account, clock) =
+            fetch_swap_state(&mut banks_client, lb_pair, &[bin_array_1, bin_array_2]).await;
 
         let swap_for_y = out_mint == lb_pair_state.token_y_mint;
 
-        let quote_result = quote_exact_in(
+        let quote_result = commons::quote::quote_exact_in(
             lb_pair,
             &lb_pair_state,
             amount_in,
@@ -391,23 +264,15 @@ async fn test_swap() {
             bin_arrays,
             None,
             &clock,
-            mint_x_transfer_fee,
-            mint_y_transfer_fee,
+            &mint_x_account,
+            &mint_y_account,
         )
         .unwrap();
 
         println!("quote_result {:?}", quote_result);
 
-        let user_token_out_account_before = banks_client
-            .get_account(user_token_out)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
         let user_token_out_state_before =
-            TokenAccount::try_deserialize(&mut user_token_out_account_before.data.as_ref())
-                .unwrap();
+            fetch_token_account_state(&mut banks_client, user_token_out).await;
 
         let main_accounts = dlmm::client::accounts::Swap2 {
             lb_pair,
@@ -425,7 +290,7 @@ async fn test_swap() {
             token_y_program: spl_token::ID,
             program: dlmm::ID,
             event_authority,
-            memo_program: SPL_MEMO_PROGRAM_ID,
+            memo_program: spl_memo::ID,
         }
         .to_account_metas(None);
 
@@ -450,15 +315,8 @@ async fn test_swap() {
 
         process_and_assert_ok(&[swap_ix], &payer, &[&payer], &mut banks_client).await;
 
-        let user_token_out_account_after = banks_client
-            .get_account(user_token_out)
-            .await
-            .ok()
-            .flatten()
-            .unwrap();
-
         let user_token_out_state_after =
-            TokenAccount::try_deserialize(&mut user_token_out_account_after.data.as_ref()).unwrap();
+            fetch_token_account_state(&mut banks_client, user_token_out).await;
 
         assert_eq!(
             user_token_out_state_after.amount - user_token_out_state_before.amount,
