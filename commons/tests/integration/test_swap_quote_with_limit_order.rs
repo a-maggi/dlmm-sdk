@@ -1,5 +1,4 @@
 use crate::*;
-use commons::dlmm::accounts::BinArray;
 use solana_sdk::signature::Keypair;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -185,6 +184,9 @@ async fn test_swap_exact_in_x_to_y_with_limit_order() {
     )
     .await;
 
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
     let swap_for_y = true;
     let quote_result = commons::quote::quote_exact_in(
         pair.lb_pair,
@@ -194,8 +196,8 @@ async fn test_swap_exact_in_x_to_y_with_limit_order() {
         bin_arrays,
         None,
         &clock,
-        &mint_x_account,
-        &mint_y_account,
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
@@ -318,6 +320,9 @@ async fn test_swap_exact_in_y_to_x_with_limit_order() {
     )
     .await;
 
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
     let swap_for_y = false;
     let quote_result = commons::quote::quote_exact_in(
         pair.lb_pair,
@@ -327,8 +332,8 @@ async fn test_swap_exact_in_y_to_x_with_limit_order() {
         bin_arrays,
         None,
         &clock,
-        &mint_x_account,
-        &mint_y_account,
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
@@ -454,6 +459,9 @@ async fn test_swap_exact_out_x_to_y_with_limit_order() {
     )
     .await;
 
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
     let swap_for_y = true;
     let quote_result = commons::quote::quote_exact_out(
         pair.lb_pair,
@@ -463,8 +471,8 @@ async fn test_swap_exact_out_x_to_y_with_limit_order() {
         bin_arrays,
         None,
         &clock,
-        &mint_x_account,
-        &mint_y_account,
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
@@ -588,6 +596,9 @@ async fn test_swap_exact_out_y_to_x_with_limit_order() {
     )
     .await;
 
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
     let swap_for_y = false;
     let quote_result = commons::quote::quote_exact_out(
         pair.lb_pair,
@@ -597,8 +608,8 @@ async fn test_swap_exact_out_y_to_x_with_limit_order() {
         bin_arrays,
         None,
         &clock,
-        &mint_x_account,
-        &mint_y_account,
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
@@ -724,6 +735,9 @@ async fn run_swap_exact_out_active_bin_partition(kind: ActiveBinOutKind) {
     )
     .await;
 
+    let mint_x_transfer_fee = get_epoch_transfer_fee(&mint_x_account, clock.epoch).unwrap();
+    let mint_y_transfer_fee = get_epoch_transfer_fee(&mint_y_account, clock.epoch).unwrap();
+
     let swap_for_y = true;
 
     let active_idx = BinArray::bin_id_to_bin_array_index(lb_pair_state.active_id).unwrap();
@@ -759,8 +773,8 @@ async fn run_swap_exact_out_active_bin_partition(kind: ActiveBinOutKind) {
         bin_arrays,
         None,
         &clock,
-        &mint_x_account,
-        &mint_y_account,
+        mint_x_transfer_fee,
+        mint_y_transfer_fee,
     )
     .unwrap();
 
