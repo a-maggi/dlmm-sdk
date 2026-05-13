@@ -110,7 +110,8 @@ pub struct LbPair {
     pub creator: Pubkey,
     pub token_mint_x_program_flag: u8,
     pub token_mint_y_program_flag: u8,
-    pub _reserved: [u8; 22],
+    pub version: u8,
+    pub _reserved: [u8; 21],
 }
 
 #[derive(Clone, Debug)]
