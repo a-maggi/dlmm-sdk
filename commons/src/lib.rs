@@ -1,11 +1,29 @@
-use anchor_lang::prelude::declare_program;
 use anyhow::*;
 use bytemuck::AnyBitPattern;
 
-declare_program!(dlmm);
+// Re-export Borsh traits for downstream users.
+pub use borsh::{BorshDeserialize, BorshSerialize};
 
-use dlmm::accounts::*;
+#[allow(unexpected_cfgs, unused_imports)]
+mod dlmm_generated {
+	use anchor_lang::prelude::declare_program;
+	use anchor_lang::prelude::*;
+	use ::borsh::BorshDeserialize;
+
+	declare_program!(dlmm);
+}
+
+pub use dlmm_generated::dlmm;
+
 use dlmm::types::*;
+
+pub use dlmm::accounts::PositionV2;
+
+pub mod zero_copy;
+pub use zero_copy::{
+    BinArray, BinArrayAccount, BinArrayBitmapExtension, BinArrayBitmapExtensionAccount, LbPair,
+    LbPairAccount,
+};
 
 /// Decode an anchor account from raw account data bytes.
 /// Strips the 8-byte discriminator and reads exactly `size_of::<T>()` bytes.
